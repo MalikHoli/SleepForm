@@ -4,9 +4,9 @@ const fs = require("fs");
 require('dotenv').config();
 const express = require('express');
 const app = express();
-
-app.listen(3000, () => {
-    console.log("listeneing @ 3000");
+const port = process.env.PORT || 3000
+app.listen(port, () => {
+    console.log(`listeneing @ ${port}`);
 })
 
 app.use(express.static('public'));
@@ -85,6 +85,4 @@ async function ReadFromGoogleSheet() {
     } catch (error) {
         return error;
     }
-
-
 }
