@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sleep data input</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <style>
+    .form-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      font-weight: bold;
+      margin-right: 1rem;
+    }
+
+    
+    button[type="submit"] {
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #fff;
+      background-color: #007bff;
+      border-color: #007bff;
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 80px);
+      grid-gap: 10px;
+      margin: auto;
+      align-items: center;
+    }
+
+    .item-7 {
+      grid-column: span 3;
+      height: 100px;
+    }
+
+    .item {
+      margin: 10px 0px;
+    }
+    #Status{
+      color: green;
+      font-weight: bold;
+      font-style: italic;
+    }
+  </style>
+
+</head>
+
+<body>
+   <div style="text-align: center; font-weight: bold; background-color: aquamarine; margin: auto;">
+      Have a nice day !
+    </div> 
+  <form>
+    <div class="container">
+      <div class="item item-1">
+        <div class="form-group my-1 mx-5">
+          <label for="date">Date</label>
+          <input type="date" class="form-control" id="date">
+        </div>
+      </div>
+      <div class="item item-2">
+        <div class="form-group my-1 mx-5">
+          <label for="wakeup">Wake up time</label>
+          <input type="time" class="form-control" id="wakeup">
+        </div>
+      </div>
+      <div class="item item-3">
+        <div class="form-group my-1 mx-5">
+          <label for="sleep">Sleep time</label>
+          <input type="time" class="form-control" id="sleep">
+        </div>
+      </div>
+      <div class="item item-4">
+        <div class="form-group my-1 mx-5">
+          <label for="SleepType">Sleep Type</label>
+          <select id="SleepType" name="SleepType">
+            <option value="EOD" selected>EOD</option>
+            <option value="Mid Day">Mid Day</option>
+          </select>
+        </div>
+      </div>
+      <div class="item item-5">
+        <div class="form-group my-1 mx-5">
+          <label for="SleepHrs">Sleep hrs</label>
+          <input type="text" id="SleepHrs" name="SleepHrs" pattern="[0-9]+([\.][0-9]+)?" required />
+        </div>
+      </div>
+      <div class="item item-6">
+        <div class="form-group my-1 mx-5">
+          <label for="SleepIndex">Sleep Index</label>
+          <input type="text" id="SleepIndex" name="SleepIndex" pattern="[0-9]+([\.][0-9]+)?" required />
+        </div>
+      </div>
+      <div class="item item-7">
+        <div style="height: 90%;" class="form-group my-1 mx-5">
+          <label for="DreamNote">Dream Note</label>
+          <input style="width: 100%; height: 100%;" type="text" id="DreamNote" name="DreamNote">
+        </div>
+      </div>
+      <div class="item item-8">
+        <div class="form-group my-1 mx-5">
+          <label for="MD">MD</label>
+          <input type="number" id="MD" name="MD" pattern="[0-9]+" required />
+        </div>
+      </div>
+      <div class="item item-9">
+        <div class="form-group my-1 mx-5">
+          <label for="MDTime">MD time</label>
+          <input type="time" class="form-control" id="MDTime">
+        </div>
+      </div>
+    </div>
+    <div style="text-align: center;" class="my-4">
+      <button type="submit" class="btn btn-primary" id="submit-button">Submit</button>
+    </div> 
+  </form>
+  <div style="text-align: center;" class="my-1 green" id="Status">
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>
