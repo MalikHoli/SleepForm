@@ -45,7 +45,7 @@ MD Time: ${WriteRow["MD Time"]}`);
         fetch('/SleepData',options).then((res)=>{  //POST method to send data at server
            return res.json();
         }).then((response)=>{
-            console.log(response);
+            // console.log(response);
             document.querySelector("#Status").innerText = `Data is successfully written at ${response["Row updated"]}`
         });
     }
