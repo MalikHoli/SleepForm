@@ -4,6 +4,11 @@ const fs = require("fs");
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const bcrypt = require('bcrypt');
+const path = require('path');
+
+
+
 const port = process.env.PORT || 3000
 app.listen(port, () => {
     console.log(`listeneing @ ${port}`);
@@ -33,6 +38,8 @@ app.post('/SleepData', async (request, response) => {
         vSleepTime = [[vData["Sleep Time"]]];
     }
     //***********************************************************************************************//
+
+    //Writting data into sheet
     try {
         const vUpdatedRow = await writeToGoogleSheet(vDataArray, vSleepTime);
         response.json({
@@ -49,6 +56,42 @@ app.post('/SleepData', async (request, response) => {
 
 })
 
+//**********************************************************************************************
+// Serving the Login Page with Password Validation
+//**********************************************************************************************
+app.post('/LoginData', async (request, response) => {
+    try {
+        //use below code to create hashed password and store in DB
+        // const hashedPassword = await bcrypt.hash(request.body.Pwd, 10)
+        const pwd = await ReadFromGoogleSheetDB(); //Reading the password from database
+        if (await bcrypt.compare(request.body.Pwd, pwd)) {
+            response.sendFile(path.join(__dirname, 'public/Home.html'));
+        }
+        else {
+            response.send("10");
+        }
+    } catch (error) {
+        response.send(error);
+    }
+})
+//**********************************************************************************************
+
+//**********************************************************************************************
+// Serving the Login Page on LogOut click
+//**********************************************************************************************
+app.post('/LoginPage', async (request, response) => {
+    try {    
+            response.sendFile(path.join(__dirname, 'public/index.html'));
+    } catch (error) {
+        response.send(error);
+    }
+})
+//**********************************************************************************************
+
+//**********************************************************************************************
+// Function Declearation
+//**********************************************************************************************
+/*1*/
 async function writeToGoogleSheet(values, SleepTime) {
     const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -60,7 +103,7 @@ async function writeToGoogleSheet(values, SleepTime) {
     const request = {
         spreadsheetId: "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA",
         //ReadFromGoogleSheet() will return the bank cell range
-        range: `Sleep!A${await ReadFromGoogleSheet()}`, 
+        range: `Sleep!A${await ReadFromGoogleSheet()}`,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
         resource: {
@@ -95,6 +138,7 @@ async function writeToGoogleSheet(values, SleepTime) {
     //**********************************************************************************************//
 }
 
+/*2*/
 async function ReadFromGoogleSheet() {
     const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -110,6 +154,28 @@ async function ReadFromGoogleSheet() {
     }
     try {
         const response = (await sheets.spreadsheets.values.get(request)).data.values.length + 1;
+        return response;
+    } catch (error) {
+        return error;
+    }
+}
+
+/*2*/
+async function ReadFromGoogleSheetDB() {
+    const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
+    const jwtClient = new GoogleAuth({
+        key: privateKey,
+        scopes: scopes
+    });
+    const sheets = google.sheets({ version: "v4", auth: jwtClient });
+    const sheetId = "1UEIYU3KPc5JKptHEL8WXDBFYifobnQBaXWe3SxPr_GE";
+    const range = "Sheet1";
+    const request = {
+        spreadsheetId: sheetId, range: range
+    }
+    try {
+        const response = (await sheets.spreadsheets.values.get(request)).data.values[1][2];
         return response;
     } catch (error) {
         return error;
