@@ -42,6 +42,7 @@ app.post('/SleepData', async (request, response) => {
     //Writting data into sheet
     try {
         const vUpdatedRow = await writeToGoogleSheet(vDataArray, vSleepTime);
+        // console.log(vUpdatedRow);
         response.json({
             status: "successful",
             "Row updated": vUpdatedRow,
@@ -82,6 +83,38 @@ app.post('/LoginData', async (request, response) => {
 app.post('/LoginPage', async (request, response) => {
     try {    
             response.sendFile(path.join(__dirname, 'public/index.html'));
+    } catch (error) {
+        response.send(error);
+    }
+})
+//**********************************************************************************************
+
+//**********************************************************************************************
+// Serving the Home Page on Home option click
+//**********************************************************************************************
+app.post('/HomePage', async (request, response) => {
+    try {    
+            response.sendFile(path.join(__dirname, 'public/Home.html'));
+    } catch (error) {
+        response.send(error);
+    }
+})
+//**********************************************************************************************
+
+//**********************************************************************************************
+// Serving the History Page on History option click
+//**********************************************************************************************
+app.post('/HistoryPage', async (request, response) => {
+    try {    
+        const rows = Number(await ReadFromGoogleSheet())-11;
+        const range = `Sleep!A${rows}:I${rows+10}`;
+        const data = await ReadFromSleep(range) 
+        data.unshift(['Date','Wake up at','Approx sleep hrs','Sleep Index','Slept at','Sleep Type','Dream Note','MD','MB Time']);   
+        response.json({
+            status: "successful",
+            "Range": range,
+            Data: data
+        });
     } catch (error) {
         response.send(error);
     }
@@ -160,7 +193,7 @@ async function ReadFromGoogleSheet() {
     }
 }
 
-/*2*/
+/*3*/
 async function ReadFromGoogleSheetDB() {
     const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -176,6 +209,28 @@ async function ReadFromGoogleSheetDB() {
     }
     try {
         const response = (await sheets.spreadsheets.values.get(request)).data.values[1][2];
+        return response;
+    } catch (error) {
+        return error;
+    }
+}
+
+/*4*/
+async function ReadFromSleep(range1) {
+    const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
+    const jwtClient = new GoogleAuth({
+        key: privateKey,
+        scopes: scopes
+    });
+    const sheets = google.sheets({ version: "v4", auth: jwtClient });
+    const sheetId = "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA";
+    const range = range1;//"Sleep";
+    const request = {
+        spreadsheetId: sheetId, range: range
+    }
+    try {
+        const response = (await sheets.spreadsheets.values.get(request)).data.values;
         return response;
     } catch (error) {
         return error;
