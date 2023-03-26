@@ -81,8 +81,8 @@ app.post('/LoginData', async (request, response) => {
 // Serving the Login Page on LogOut click
 //**********************************************************************************************
 app.post('/LoginPage', async (request, response) => {
-    try {    
-            response.sendFile(path.join(__dirname, 'public/index.html'));
+    try {
+        response.sendFile(path.join(__dirname, 'public/index.html'));
     } catch (error) {
         response.send(error);
     }
@@ -93,8 +93,8 @@ app.post('/LoginPage', async (request, response) => {
 // Serving the Home Page on Home option click
 //**********************************************************************************************
 app.post('/HomePage', async (request, response) => {
-    try {    
-            response.sendFile(path.join(__dirname, 'public/Home.html'));
+    try {
+        response.sendFile(path.join(__dirname, 'public/Home.html'));
     } catch (error) {
         response.send(error);
     }
@@ -105,11 +105,14 @@ app.post('/HomePage', async (request, response) => {
 // Serving the History Page on History option click
 //**********************************************************************************************
 app.post('/HistoryPage', async (request, response) => {
-    try {    
-        const rows = Number(await ReadFromGoogleSheet())-11;
-        const range = `Sleep!A${rows}:I${rows+10}`;
-        const data = await ReadFromSleep(range) 
-        data.unshift(['Date','Wake up at','Approx sleep hrs','Sleep Index','Slept at','Sleep Type','Dream Note','MD','MB Time']);   
+    try {
+        const rows = Number(await ReadFromGoogleSheet()) - 11;
+        const range = `Sleep!A${rows}:I${rows + 10}`;
+        const data = await ReadFromSleep(range);
+        data.map((ele)=>{
+            ele.splice(6,1);
+        });
+        data.unshift(['Date', 'Wake up at', 'Approx sleep hrs', 'Sleep Index', 'Slept at', 'Sleep Type', 'MD', 'MB Time']);
         response.json({
             status: "successful",
             "Range": range,
