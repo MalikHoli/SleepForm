@@ -126,12 +126,36 @@
 
       .container {
         display: block;
-        /* grid-template-columns: repeat(3, 1fr); */
-        /* grid-template-rows: repeat(4, 80px);
-      grid-gap: 10px; */
         margin: auto;
         align-items: center;
-        /* box-sizing: border-box; */
+      }
+
+      .item {
+        margin: 20px 0px;
+      }
+    }
+
+    @media screen and (max-width: 920px) {
+      .topnav.responsive {
+        position: relative;
+      }
+
+      .topnav.responsive a.icon {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      .topnav.responsive a {
+        float: none;
+        display: block;
+        text-align: left;
+      }
+
+      .container {
+        display: block;
+        margin: auto;
+        align-items: center;
       }
 
       .item {
@@ -156,21 +180,6 @@
       <i class="fa fa-bars"></i>
     </a>
   </div>
-  <!-- <nav class="navbar navbar-expand-lg navbar navbar-dark bg-dark">
-    <div class="collapse navbar-collapse" id="navbarText">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <span id="Home" class="nav-link active">Home</span>
-        </li>
-        <li class="nav-item">
-          <a id="History" class="nav-link" href="">History</a>
-        </li>
-      </ul>
-      <span class="navbar-text">
-        <a id="logout" href="">Log out</a>
-      </span>
-    </div>
-  </nav> -->
   <form>
     <div class="container">
       <div class="item item-1">
