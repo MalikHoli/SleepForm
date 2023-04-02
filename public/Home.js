@@ -70,16 +70,14 @@ MD Time: ${WriteRow["MD Time"]}`);
 
 /*3*/document.querySelector("#History").addEventListener("click", (event) => {
     const vHistory = document.querySelector("#History");
-    vHistory.className = "nav-link active";
+    vHistory.className = "active";
     vHistory.removeAttribute("href");
 
     const vHome = document.querySelector("#Home");
-    vHome.className = "nav-link";
+    vHome.removeAttribute("class");
     const att = document.createAttribute("href");
     vHome.setAttributeNode(att);
     att.value = " ";
-    document.getElementsByTagName("li")[0].className = "nav-item"
-    document.getElementsByTagName("li")[1].className = "nav-item active"
 
     document.getElementsByTagName("form")[0].remove();
     document.querySelector("#Status").remove();
