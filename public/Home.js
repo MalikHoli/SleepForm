@@ -133,3 +133,18 @@ MD Time: ${WriteRow["MD Time"]}`);
         document.close();
     });
 });
+
+/*5*/function myFunction() {
+    var x = document.getElementById("myTopnav");
+    if (x.className === "topnav") {
+      x.className += " responsive";
+    } else {
+      x.className = "topnav";
+    }
+    let vlogout = document.getElementById("logout");
+    if (vlogout.className === "logout") {
+        vlogout.removeAttribute("class")
+      } else {
+        vlogout.className = "logout"
+      }
+  }
