@@ -24,7 +24,6 @@
       margin-right: 1rem;
     }
 
-
     button[type="submit"] {
       padding: 0.375rem 0.75rem;
       font-size: 1rem;
@@ -96,7 +95,7 @@
 
     /* When the screen is less than 600 pixels wide, hide all links, except for the first one ("Home"). Show the link that contains should open and close the topnav (.icon) */
     @media screen and (max-width: 600px) {
-      .topnav a:not(:first-child) {
+      .topnav a:not(.active) {
         display: none;
       }
 
@@ -173,7 +172,7 @@
 
 <body>
   <div class="topnav" id="myTopnav">
-    <a id="Home" class="active">Home</a>
+    <a id="Home" class="active" href=".">Home</a>
     <a id="History" href="">History</a>
     <a id="logout" class="logout" href="">Log out</a>
     <a href="javascript:void(0);" class="icon" onclick="myFunction()">

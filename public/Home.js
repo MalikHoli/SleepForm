@@ -72,13 +72,13 @@ MD Time: ${WriteRow["MD Time"]}`);
     const vHistory = document.querySelector("#History");
     vHistory.className = "active";
     vHistory.removeAttribute("href");
-
+    
     const vHome = document.querySelector("#Home");
     vHome.removeAttribute("class");
     const att = document.createAttribute("href");
     vHome.setAttributeNode(att);
     att.value = " ";
-
+    
     document.getElementsByTagName("form")[0].remove();
     document.querySelector("#Status").remove();
 
