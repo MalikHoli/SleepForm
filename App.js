@@ -57,9 +57,7 @@ app.post('/SleepData', async (request, response) => {
 
 })
 
-//**********************************************************************************************
-// Serving the Login Page with Password Validation
-//**********************************************************************************************
+//--------------------Serving the Login Page with Password Validation---------------------
 app.post('/LoginData', async (request, response) => {
     try {
         //use below code to create hashed password and store in DB
@@ -75,11 +73,9 @@ app.post('/LoginData', async (request, response) => {
         response.send(error);
     }
 })
-//**********************************************************************************************
+//-----------------------------------------------------------------------------------------
 
-//**********************************************************************************************
-// Serving the Login Page on LogOut click
-//**********************************************************************************************
+//----------------------Serving the Login Page on LogOut click-----------
 app.post('/LoginPage', async (request, response) => {
     try {
         response.sendFile(path.join(__dirname, 'public/index.html'));
@@ -87,11 +83,9 @@ app.post('/LoginPage', async (request, response) => {
         response.send(error);
     }
 })
-//**********************************************************************************************
+//-----------------------------------------------------------------------
 
-//**********************************************************************************************
-// Serving the Home Page on Home option click
-//**********************************************************************************************
+//--------------Serving the Home Page on Home option click-----------
 app.post('/HomePage', async (request, response) => {
     try {
         response.sendFile(path.join(__dirname, 'public/Home.html'));
@@ -99,34 +93,57 @@ app.post('/HomePage', async (request, response) => {
         response.send(error);
     }
 })
-//**********************************************************************************************
+//--------------------------------------------------------------------
 
-//**********************************************************************************************
-// Serving the History Page on History option click
-//**********************************************************************************************
+//--------------Serving the dream data--------------------------------
+app.post('/ReturnDream', async (request, response) => {
+    try {
+        let row = request.body.Row;
+        const range = `Sleep!G${row}`;
+        const vDream = await ReadFromSleep(range);
+        response.json({
+            status: "successful",
+            "Dream": vDream
+        })
+    } catch (error) {
+        response.send(error);
+    }
+})
+//--------------------------------------------------------------------
+
+//----------------------------Serving the History Page on History option click-------------------------------------------------------------
 app.post('/HistoryPage', async (request, response) => {
     try {
-        const rows = Number(await ReadFromGoogleSheet()) - 11;
+        const rows = Number(await ReadFromGoogleSheet()) - 10;
         const range = `Sleep!A${rows}:I${rows + 10}`;
         const data = await ReadFromSleep(range);
-        data.map((ele)=>{
-            ele.splice(6,1);
+
+        //--Remmoving the Dream data from array--
+        data.map((ele) => {
+            ele.splice(6, 1);
         });
-        data.unshift(['Date', 'Wake up at', 'Approx sleep hrs', 'Sleep Index', 'Slept at', 'Sleep Type', 'MD', 'MB Time']);
+        //---------------------------------------
+
+        //------Adding Row no------
+        data.forEach((row, i) => {
+            row.unshift(i + 1)
+        });
+        //-------------------------
+
+        data.unshift(['Sr No', 'Date', 'Wake up at', 'Approx sleep hrs', 'Sleep Index', 'Slept at', 'Sleep Type', 'MD', 'MB Time']);
         response.json({
             status: "successful",
             "Range": range,
-            Data: data
+            Data: data,
+            startRow: rows
         });
     } catch (error) {
         response.send(error);
     }
 })
-//**********************************************************************************************
+//------------------------------------------------------------------------------------------------------------------------------------------
 
-//**********************************************************************************************
-// Function Declearation
-//**********************************************************************************************
+//Function Declearation starts here
 /*1*/
 async function writeToGoogleSheet(values, SleepTime) {
     const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);

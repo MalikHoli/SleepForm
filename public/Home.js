@@ -42,7 +42,7 @@ MD Time: ${WriteRow["MD Time"]}`);
             },
             body: JSON.stringify(WriteRow)
         }
-        fetch('/SleepData', options).then((res) => {  //POST method to send data at server
+        fetch('/SleepData', options).then((res) => {  //POST method to send and receive data from server
             return res.json();
         }).then((response) => {
             // console.log(response);
@@ -58,7 +58,7 @@ MD Time: ${WriteRow["MD Time"]}`);
             "Content-Type": "application/json"
         }
     }
-    fetch('/LoginPage', options).then((res) => {  //POST method to send data at server
+    fetch('/LoginPage', options).then((res) => {  //POST method to receive HTML page from server
         return res.text();
     }).then((response) => {
         document.open('text/html');
@@ -69,17 +69,23 @@ MD Time: ${WriteRow["MD Time"]}`);
 });
 
 /*3*/document.querySelector("#History").addEventListener("click", (event) => {
+
+    //----------DOM Manupulation to change the nav bar-----------------------------
     const vHistory = document.querySelector("#History");
     vHistory.className = "active";
     vHistory.removeAttribute("href");
-    
+
     const vHome = document.querySelector("#Home");
     vHome.removeAttribute("class");
     const att = document.createAttribute("href");
     vHome.setAttributeNode(att);
     att.value = " ";
-    
+    //-----------------------------------------------------------------------------
+
+    const vForm = document.getElementsByTagName("form")[0];
     document.getElementsByTagName("form")[0].remove();
+
+    const vStatus = document.querySelector("#Status");
     document.querySelector("#Status").remove();
 
     const vTable = document.createElement("table");
@@ -94,25 +100,116 @@ MD Time: ${WriteRow["MD Time"]}`);
             "Content-Type": "application/json"
         }
     }
-    fetch('/HistoryPage', options).then((res) => {  //POST method to send data at server
+
+    fetch('/HistoryPage', options).then((res) => {  //POST method to request data from server
         return res.json();
     }).then((response) => {
-        // console.log(response.Data);
+        let vStartRow = response.startRow - 1;
         response.Data.forEach((row, i) => {
             table += `<tr>`;
             if (i == 0) {
-                row.forEach((cell, j) => {
+                row.forEach((cell) => {
                     table += `<th>${cell}</th>`;
                 });
             }
             else {
-                row.forEach((cell, j) => {
+                row.forEach((cell) => {
                     table += `<td>${cell}</td>`;
                 });
             }
             table += `</tr>`
         });
         vTable.innerHTML = table;
+
+        //----------DOM Manupulation to add modify option-------------------------------
+        const vModifyDiv = document.createElement("Div");
+        vModifyDiv.className = "my-1";
+        vModifyDiv.style = "text-align: center; margin: auto;";
+
+        let vOptions;
+        for (let i = 11; i >= 2; i--) {
+            vOptions += `<option value="${i - 1}">${i - 1}</option>`
+        }
+
+        const vModifySelector =
+            `<form>
+        <label for="Sr">Select a row to modify:</label>
+        <select name="Sr" id="Sr">
+        ${vOptions}
+        </select>
+        <input type="submit" class="btn-primary" value="Modify" id="Modify">
+        </form>`
+
+        vModifyDiv.innerHTML = vModifySelector;
+        document.body.appendChild(vModifyDiv);
+        //-----------------------------------------------------------------------------
+
+        //---------------------------Event listener for Modify button--------------------------------------------------------------------
+        document.querySelector("#Modify").addEventListener("click", (event) => {
+            event.preventDefault();
+            let vRow = Number(document.querySelector("#Sr").value);
+            let vModifyRowNo = vStartRow + vRow; //getting the sheetrow to be modified
+
+            //------------fetching content of row to be modified--------------------------------------------------------
+            let vModifyRowDOM = document.querySelector("#HistoryData").rows.item(vRow).getElementsByTagName("td");
+            let vSleepTimeCell = document.querySelector("#HistoryData").rows.item(vRow - 1).getElementsByTagName("td");
+            let vModifyRowContent = [];
+            for (let i = 1; i < vModifyRowDOM.length; i++) {
+                if (i == 5) {
+                    let vSleepTime = vSleepTimeCell[i].innerText.replace(" (next day)", "").toLowerCase()
+                    vModifyRowContent.push(vSleepTime)
+                }
+                else {
+                    vModifyRowContent.push(vModifyRowDOM[i].innerText)
+                }
+            }
+            //----------------------------------------------------------------------------------------------------------
+
+
+            //------------fetching the home page to modify row-----------------------------------------
+            fetch('/HomePage', options).then((res) => {  //POST method to receive HTML page from server
+                return res.text();
+            }).then((response) => {
+                document.open('text/html');
+                document.write(response);
+                document.close();
+
+                let vFetchDreamBody = {
+                    "Row": vModifyRowNo
+                };
+                const options = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(vFetchDreamBody)
+                }
+                //------------fetching the dream into modify row array----------------
+                fetch('/ReturnDream', options).then((res) => {  //POST method to receive data from server
+                    return res.json();
+                }).then((response) => {
+                    vModifyRowContent.splice(6, 0, response.Dream[0][0]);
+                    console.log(vModifyRowContent);
+                    
+                    let vMonth = Number(vModifyRowContent[0].split("/")[1]).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+                    let vDate = Number(vModifyRowContent[0].split("/")[0]).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
+                    let vYear = vModifyRowContent[0].split("/")[2];
+
+                    document.querySelector("#date").value = `${vYear}-${vMonth}-${vDate}`;
+                    document.querySelector("#wakeup").value = vModifyRowContent[1];
+                    // document.querySelector("#sleep").value;
+                    // document.querySelector("#SleepType").value;
+                    // document.querySelector("#SleepHrs").value;
+                    // document.querySelector("#SleepIndex").value;
+                    // document.querySelector("#DreamNote").value;
+                    // document.querySelector("#MD").value;
+                    // document.querySelector("#MDTime").value;
+                });
+                //-------------------------------------------------------------------
+            });
+            //-----------------------------------------------------------------------------------------
+        });
+        //-----------------------------------------------------------------------------------------------------------------------------
     });
 });
 
@@ -123,7 +220,7 @@ MD Time: ${WriteRow["MD Time"]}`);
             "Content-Type": "application/json"
         }
     }
-    fetch('/HomePage', options).then((res) => {  //POST method to send data at server
+    fetch('/HomePage', options).then((res) => {  //POST method to receive HTML page from server
         return res.text();
     }).then((response) => {
         document.open('text/html');
@@ -135,14 +232,14 @@ MD Time: ${WriteRow["MD Time"]}`);
 /*5*/function myFunction() {
     var x = document.getElementById("myTopnav");
     if (x.className === "topnav") {
-      x.className += " responsive";
+        x.className += " responsive";
     } else {
-      x.className = "topnav";
+        x.className = "topnav";
     }
     let vlogout = document.getElementById("logout");
     if (vlogout.className === "logout") {
         vlogout.removeAttribute("class")
-      } else {
+    } else {
         vlogout.className = "logout"
-      }
-  }
+    }
+}
