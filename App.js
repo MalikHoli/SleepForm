@@ -19,13 +19,14 @@ app.use(express.json({ limit: '100kb' }));
 
 app.post('/SleepData', async (request, response) => {
     let vData = request.body;
+    console.log(vData);
     let vDataArray = [[
         vData.Date, vData["Wake Up Time"]
         , vData["Sleep Hrs"], vData["Sleep Index"]
         , , vData["Sleep Type"], vData["Dream Note"]
         , vData["MD"], vData["MD Time"]
     ]];
-    //**************Below code is to put sleep time before the current line in spreadsheet*************//
+    //**************Below code is to format the sleep time*****************************************//
     let vSleepTime;
     if (Number(vData["Sleep Time"].substring(0, 2)) <= 11) {
         if (vData["Sleep Time"].substring(0, 2) == '00') {
@@ -38,23 +39,39 @@ app.post('/SleepData', async (request, response) => {
         vSleepTime = [[vData["Sleep Time"]]];
     }
     //***********************************************************************************************//
-
     //Writting data into sheet
-    try {
-        const vUpdatedRow = await writeToGoogleSheet(vDataArray, vSleepTime);
-        // console.log(vUpdatedRow);
-        response.json({
-            status: "successful",
-            "Row updated": vUpdatedRow,
-            "Data": vDataArray
-        })
-    } catch (error) {
-        response.json({
-            status: "Failed",
-            "error": error
-        })
+    if(Object.keys(vData).length == 10){ //code to modify line in sheet
+        try {
+            const vUpdatedRow = await writeToGoogleSheet(vDataArray, vSleepTime, vData["ModifyRow"]);
+            // console.log(vUpdatedRow);
+            response.json({
+                status: "successful",
+                "Row updated": vUpdatedRow,
+                "Data": vDataArray
+            })
+        } catch (error) {
+            response.json({
+                status: "Failed",
+                "error": error
+            })
+        }
     }
 
+    else{ //Code to add a line in sheet
+        try {
+            const vUpdatedRow = await writeToGoogleSheet(vDataArray, vSleepTime,1);
+            response.json({
+                status: "successful",
+                "Row updated": vUpdatedRow,
+                "Data": vDataArray
+            })
+        } catch (error) {
+            response.json({
+                status: "Failed",
+                "error": error
+            })
+        }
+    }
 })
 
 //--------------------Serving the Login Page with Password Validation---------------------
@@ -145,7 +162,7 @@ app.post('/HistoryPage', async (request, response) => {
 
 //Function Declearation starts here
 /*1*/
-async function writeToGoogleSheet(values, SleepTime) {
+async function writeToGoogleSheet(values, SleepTime, Row) {
     const privateKey = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS);
     const scopes = ["https://www.googleapis.com/auth/spreadsheets"];
     const jwtClient = new GoogleAuth({
@@ -153,34 +170,58 @@ async function writeToGoogleSheet(values, SleepTime) {
         scopes: scopes
     });
     const sheets = google.sheets({ version: "v4", auth: jwtClient });
-    const request = {
-        spreadsheetId: "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA",
-        //ReadFromGoogleSheet() will return the bank cell range
-        range: `Sleep!A${await ReadFromGoogleSheet()}`,
-        valueInputOption: "USER_ENTERED",
-        insertDataOption: "INSERT_ROWS",
-        resource: {
-            values: values
-        }
 
-    };
+    let request;
+    if(Row == 1){ // To append row
+        request = {
+            spreadsheetId: "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA",
+            //ReadFromGoogleSheet() will return the bank cell rang
+            range: `Sleep!A${await ReadFromGoogleSheet()}`,
+            valueInputOption: "USER_ENTERED",
+            insertDataOption: "INSERT_ROWS",
+            resource: {
+                values: values
+            }
+        };
+    }else{ // To update row
+        request = {
+            spreadsheetId: "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA",
+            range: `Sleep!A${Row}`,
+            valueInputOption: "USER_ENTERED",
+            resource: {
+                values: values
+            }
+        };
+    }
     //**************Below code is to put sleep time before the current line in spreadsheet*************//
+    let vRange = Row == 1?`Sleep!E${await ReadFromGoogleSheet() - 1}`:`Sleep!E${Row-1}` //specify range(Add or Modify)
     const SleepTimeRequest = {
         spreadsheetId: "1b5qBcbJuE5mAhqlpxPnov2pOTkXtJTJMzFADqPIyiLA",
-        range: `Sleep!E${await ReadFromGoogleSheet() - 1}`,
+        range: vRange,
         valueInputOption: "USER_ENTERED",
         resource: {
             values: SleepTime
         }
     };
     //************************************************************************************************//
-    try {
-        const response = (await sheets.spreadsheets.values.append(request)).data.updates.updatedRange;
-        const SleepTimeResponse = (await sheets.spreadsheets.values.update(SleepTimeRequest)).data.updatedRange;
-        const CellsUpdated = `${response} and ${SleepTimeResponse}`;
-        return CellsUpdated;
-    } catch (error) {
-        return error;
+    if(Row == 1){ // To append row
+        try {
+            const response = (await sheets.spreadsheets.values.append(request)).data.updates.updatedRange;
+            const SleepTimeResponse = (await sheets.spreadsheets.values.update(SleepTimeRequest)).data.updatedRange;
+            const CellsUpdated = `${response} and ${SleepTimeResponse}`;
+            return CellsUpdated;
+        } catch (error) {
+            return error;
+        }
+    }else{ // To update row
+        try {
+            const response = (await sheets.spreadsheets.values.update(request)).data.updatedRange;
+            const SleepTimeResponse = (await sheets.spreadsheets.values.update(SleepTimeRequest)).data.updatedRange;
+            const CellsUpdated = `${response} and ${SleepTimeResponse}`;
+            return CellsUpdated;
+        } catch (error) {
+            return error;
+        }
     }
 
     //*************************Below is one more way to wrire above code*****************************//

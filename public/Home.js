@@ -1,6 +1,5 @@
 /*1*/document.querySelector("#submit-button").addEventListener("click", (event) => {
     event.preventDefault();
-
     let WriteRow = {
         "Date": "",
         "Wake Up Time": "",
@@ -45,7 +44,6 @@ MD Time: ${WriteRow["MD Time"]}`);
         fetch('/SleepData', options).then((res) => {  //POST method to send and receive data from server
             return res.json();
         }).then((response) => {
-            // console.log(response);
             document.querySelector("#Status").innerText = `Data is successfully written at ${response["Row updated"]}`
         });
     }
@@ -188,22 +186,88 @@ MD Time: ${WriteRow["MD Time"]}`);
                 fetch('/ReturnDream', options).then((res) => {  //POST method to receive data from server
                     return res.json();
                 }).then((response) => {
-                    vModifyRowContent.splice(6, 0, response.Dream[0][0]);
-                    console.log(vModifyRowContent);
-                    
+                    document.querySelector("#submit-button").style = 'display: none;'; //hiding submit button
+                    document.querySelector("#update-button").style = 'display: inline-block'; //show update button
+                    vModifyRowContent.splice(6, 0, response.Dream[0][0]); //Added drem data to array
+                    //------------------- converting date into accetable format for input date box---------------------------------------------------
                     let vMonth = Number(vModifyRowContent[0].split("/")[1]).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
                     let vDate = Number(vModifyRowContent[0].split("/")[0]).toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false });
                     let vYear = vModifyRowContent[0].split("/")[2];
-
-                    document.querySelector("#date").value = `${vYear}-${vMonth}-${vDate}`;
-                    document.querySelector("#wakeup").value = vModifyRowContent[1];
-                    // document.querySelector("#sleep").value;
-                    // document.querySelector("#SleepType").value;
-                    // document.querySelector("#SleepHrs").value;
-                    // document.querySelector("#SleepIndex").value;
-                    // document.querySelector("#DreamNote").value;
-                    // document.querySelector("#MD").value;
-                    // document.querySelector("#MDTime").value;
+                    document.querySelector("#date").value = `${vYear}-${vMonth}-${vDate}`;//Old Date is received in form
+                    //--------------------------------------------------------------------------------------------------------------------------------
+                    //------------------- converting time into accetable format for input time box----------------------------------------------------------------------
+                    let vtimeHr = new Date(`2000-01-01 ${vModifyRowContent[1]}`).getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })
+                    let vtimeMin = new Date(`2000-01-01 ${vModifyRowContent[1]}`).getMinutes().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })
+                    document.querySelector("#wakeup").value = `${vtimeHr}:${vtimeMin}`;//Old Wakeup time is received in form
+                    //--------------------------------------------------------------------------------------------------------------------------------------------------
+                    //------------------- converting time into accetable format for input time box----------------------------------------------------------------------
+                    vtimeHr = new Date(`2000-01-01 ${vModifyRowContent[4]}`).getHours().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })
+                    vtimeMin = new Date(`2000-01-01 ${vModifyRowContent[4]}`).getMinutes().toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false })
+                    document.querySelector("#sleep").value = `${vtimeHr}:${vtimeMin}`;//Old sleep is received in form
+                    //--------------------------------------------------------------------------------------------------------------------------------------------------
+                    //---------Receiving other Old form elements from array-----------------
+                    document.querySelector("#SleepType").value = vModifyRowContent[5];
+                    document.querySelector("#SleepHrs").value = vModifyRowContent[2];
+                    document.querySelector("#SleepIndex").value = vModifyRowContent[3];
+                    document.querySelector("#DreamNote").value = vModifyRowContent[6];
+                    document.querySelector("#MD").value = vModifyRowContent[7];
+                    document.querySelector("#MDTime").value = vModifyRowContent[8];
+                    //------------------------------------------------------------------
+                    //------------------------Defining the events for update button click when user has updated the content------------
+                    document.querySelector("#update-button").addEventListener("click", (event) => {
+                        event.preventDefault();
+                        let WriteRow = {
+                            "Date": "",
+                            "Wake Up Time": "",
+                            "Sleep Time": "",
+                            "Sleep Type": "",
+                            "Sleep Hrs": "",
+                            "Sleep Index": "",
+                            "Dream Note": "",
+                            "MD": "",
+                            "MD Time": "",
+                            "ModifyRow": vModifyRowNo
+                        };
+                    
+                        WriteRow["Date"] = document.querySelector("#date").value;
+                        WriteRow["Wake Up Time"] = document.querySelector("#wakeup").value;
+                        WriteRow["Sleep Time"] = document.querySelector("#sleep").value;
+                        WriteRow["Sleep Type"] = document.querySelector("#SleepType").value;
+                        WriteRow["Sleep Hrs"] = document.querySelector("#SleepHrs").value;
+                        WriteRow["Sleep Index"] = document.querySelector("#SleepIndex").value;
+                        WriteRow["Dream Note"] = document.querySelector("#DreamNote").value;
+                        WriteRow["MD"] = document.querySelector("#MD").value;
+                        WriteRow["MD Time"] = document.querySelector("#MDTime").value;
+                    
+                        let vConfirm = confirm(`Are you sure you want to submit below data
+                    Date: ${WriteRow["Date"]}
+                    Wake Up Time: ${WriteRow["Wake Up Time"]}
+                    Sleep Hrs: ${WriteRow["Sleep Hrs"]}
+                    Sleep Index: ${WriteRow["Sleep Index"]}
+                    Sleep Time: ${WriteRow["Sleep Time"]}
+                    Sleep Type: ${WriteRow["Sleep Type"]}
+                    Dream Note: ${WriteRow["Dream Note"]}
+                    MD: ${WriteRow["MD"]}
+                    MD Time: ${WriteRow["MD Time"]}`);
+                    
+                        if (vConfirm === true) {
+                            const options = {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(WriteRow)
+                            }
+                            fetch('/SleepData', options).then((res) => {  //POST method to send and receive data from server
+                                return res.json();
+                            }).then((response) => {
+                                document.querySelector("#Status").innerText = 
+                                `Data is successfully updated at ${response["Row updated"]}
+                                 Please validate History page`
+                            });
+                        }
+                    });
+                    //-------------------------------------------------------------------------------------------------------------------------
                 });
                 //-------------------------------------------------------------------
             });
